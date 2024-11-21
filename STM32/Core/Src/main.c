@@ -55,11 +55,16 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void blinkDebugLed(void);
 void initSystem(void);
+void shiftRightEffect(void);
+void displayLed7Seg(const uint8_t *digits);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t digits[4] = {1, 2, 3, 4};
+uint8_t temp_digits[4] = {0, 0, 0, 0};
+uint8_t step = 0;
 
 /* USER CODE END 0 */
 
@@ -97,8 +102,11 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
-  sTimer2Set(1000, 1000);
-  sTimer4Set(10000, 10000);
+  sTimer2Set(0, 1000); // timer interupt 1s
+  sTimer4Set(0, 10); // timer interupt 1ms
+
+  led7SegSetColon(0);
+  led7SegDisplay(digits);
 
   /* USER CODE END 2 */
 
@@ -106,6 +114,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (sTimer2GetFlag())
+	  {
+		  shiftRightEffect();
+		  displayLed7Seg(temp_digits);
+	  }
+
+	  if(sTimer4GetFlag())
+	  {
+		  led7SegDisplay();
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,6 +187,61 @@ void initSystem()
 	initTimer2();
 	initTimer4();
 	initLed7Seg();
+}
+
+void shiftRightEffect(void)
+{
+    if (step < 4)
+    {
+        for (uint8_t i = 0; i < 4; i++)
+        {
+            if (step >= i + 1)
+            {
+                temp_digits[i] = 0;
+            }
+            else
+            {
+                temp_digits[i] = digits[(i + 4 - step) % 4];
+            }
+        }
+    }
+    else
+    {
+        uint8_t return_step = step - 4;
+        for (uint8_t i = 0; i < 4; i++)
+        {
+            if (i < return_step + 1)
+            {
+                temp_digits[i] = digits[4 - (return_step - i + 1)];
+            }
+            else
+            {
+                temp_digits[i] = 0;
+            }
+        }
+    }
+
+    step++;
+
+    if (step >= 8)
+    {
+        step = 0;
+    }
+}
+
+void displayLed7Seg(const uint8_t *digits)
+{
+    for (uint8_t i = 0; i < 4; i++)
+    {
+        if (digits[i] != 0)
+        {
+            led7SegSetDigit(digits[i], i, 0);
+        }
+        else
+        {
+            led7SegTurnOff(i);
+        }
+    }
 }
 
 /* USER CODE END 4 */
