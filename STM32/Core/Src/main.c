@@ -32,6 +32,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define SET_DURATION 2
+#define RESET_DURATION 4
 
 /* USER CODE END PD */
 
@@ -55,6 +57,12 @@ void blinkDebugLed(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+enum led_state{
+	led_set,
+	led_reset
+};
+enum led_state current_state = led_set;
+uint8_t counter = 0;
 
 /* USER CODE END 0 */
 
@@ -95,6 +103,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	switch (current_state) {
+		case led_reset:
+			HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, SET);
+			if(counter <= 0)
+			{
+				current_state = led_set;
+				counter = RESET_DURATION;
+			}
+			break;
+		default:
+			HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, RESET);
+			if(counter <= 0)
+			{
+				current_state = led_reset;
+				counter = SET_DURATION;
+			}
+			break;
+	}
+	--counter;
+
+	HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
