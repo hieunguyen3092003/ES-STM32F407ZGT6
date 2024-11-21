@@ -55,6 +55,8 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void blinkDebugLed(void);
 void initSystem(void);
+void updateTime(uint8_t *seconds, uint8_t *minutes, uint8_t *hours);
+void displayTime(const uint8_t *minutes, const uint8_t *hours);
 
 /* USER CODE END PFP */
 
@@ -97,8 +99,11 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
-  sTimer2Set(1000, 1000);
-  sTimer4Set(10000, 10000);
+  sTimer2Set(0, 1); // timer interupt 1ms
+  sTimer4Set(0, 2500); // timer interupt 0,25s
+
+  uint8_t hours = 9, minutes = 0, seconds = 0, counter = 0;
+  displayTime(&minutes, &hours);
 
   /* USER CODE END 2 */
 
@@ -106,6 +111,23 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(sTimer2GetFlag())
+	  {
+		  led7SegDisplay();
+	  }
+
+	  if (sTimer4GetFlag())
+	  {
+		  if((++counter) % 4 == 0)
+		  {
+			  updateTime(&seconds, &minutes, &hours);
+			  displayTime(&minutes, &hours);
+
+			  blinkDebugLed();
+		  }
+		  led7SegSetColon(counter % 2);
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -169,6 +191,32 @@ void initSystem()
 	initTimer2();
 	initTimer4();
 	initLed7Seg();
+}
+
+void updateTime(uint8_t *seconds, uint8_t *minutes, uint8_t *hours)
+{
+	++*seconds;
+	if(*seconds >= 60)
+	{
+		*seconds = 0;
+		++*minutes;
+	}
+    if (*minutes >= 60)
+    {
+        *minutes = 0;
+        ++*hours;
+        if (*hours >= 24)
+        {
+            *hours = 0;
+        }
+    }
+}
+void displayTime(const uint8_t *minutes, const uint8_t *hours)
+{
+	led7SegSetDigit(*hours / 10, 0, 0);
+	led7SegSetDigit(*hours % 10, 1, 0);
+	led7SegSetDigit(*minutes / 10, 2, 0);
+	led7SegSetDigit(*minutes % 10, 3, 0);
 }
 
 /* USER CODE END 4 */
