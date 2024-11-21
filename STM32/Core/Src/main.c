@@ -49,6 +49,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+void blinkDebugLed(void);
 
 /* USER CODE END PFP */
 
@@ -148,6 +149,11 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void blinkDebugLed()
+{
+	HAL_GPIO_TogglePin(GPIOE, LED_DEBUG_Pin);
+}
+
 
 /* USER CODE END 4 */
 
