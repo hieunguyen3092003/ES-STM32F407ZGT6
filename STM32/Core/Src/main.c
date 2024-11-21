@@ -18,10 +18,14 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "sTimer.h"
+#include "led7Seg.h"
 
 /* USER CODE END Includes */
 
@@ -50,6 +54,7 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 void blinkDebugLed(void);
+void initSystem(void);
 
 /* USER CODE END PFP */
 
@@ -87,7 +92,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_SPI1_Init();
+  MX_TIM2_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  initSystem();
+  sTimer2Set(1000, 1000);
+  sTimer4Set(10000, 10000);
 
   /* USER CODE END 2 */
 
@@ -153,7 +164,12 @@ void blinkDebugLed()
 {
 	HAL_GPIO_TogglePin(GPIOE, LED_DEBUG_Pin);
 }
-
+void initSystem()
+{
+	initTimer2();
+	initTimer4();
+	initLed7Seg();
+}
 
 /* USER CODE END 4 */
 
