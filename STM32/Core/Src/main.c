@@ -36,6 +36,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DURATION_RED 5
+#define DURATION_GREEN 3
+#define DURATION_YELLOW 1
 
 /* USER CODE END PD */
 
@@ -100,12 +103,66 @@ int main(void)
   sTimer2Set(1000, 1000);
   sTimer4Set(10000, 10000);
 
+  enum traffic_light_state
+   {
+ 	  green,
+ 	  yellow,
+ 	  red
+   } current_state = red;
+
+   uint8_t counter = DURATION_RED;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(sTimer2GetFlag())
+	  {
+		  if(counter > 0)
+		  {
+			  --counter;
+		  }
+
+		  switch(current_state)
+		  {
+		  case green:
+			  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin, SET);
+			  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin | LED_DEBUG_Pin, RESET);
+
+			  if(counter <= 0)
+			  {
+				  current_state = yellow;
+				  counter = DURATION_YELLOW;
+			  }
+
+			  break;
+		  case yellow:
+			  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin, SET);
+			  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin | LED_DEBUG_Pin, RESET);
+
+			  if(counter <= 0)
+			  {
+				  current_state = red;
+				  counter = DURATION_RED;
+			  }
+
+			  break;
+		  case red:
+			  HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, SET);
+			  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin | OUTPUT_Y1_Pin, RESET);
+
+			  if(counter <= 0)
+			  {
+				  current_state = green;
+				  counter = DURATION_GREEN;
+			  }
+
+			  break;
+		  default:
+		  }
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
