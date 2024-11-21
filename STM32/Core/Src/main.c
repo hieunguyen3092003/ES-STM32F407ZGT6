@@ -129,9 +129,20 @@ int main(void)
   {
 	  if(sTimer2GetFlag())
 	  {
-		  --counter_led_debug;
-		  --counter_output_y0;
-		  --counter_output_y1;
+		  if(counter_led_debug > 0)
+		  {
+			  --counter_led_debug;
+		  }
+
+		  if(counter_output_y0 > 0)
+		  {
+			  --counter_output_y0;
+		  }
+
+		  if(counter_output_y1 > 0)
+		  {
+			  --counter_output_y1;
+		  }
 
 		  switch (led_debug_cur_state)
 		  {
