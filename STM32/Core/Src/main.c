@@ -32,6 +32,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DURATION_RED 5
+#define DURATION_GREEN 3
+#define DURATION_YELLOW 1
 
 /* USER CODE END PD */
 
@@ -88,6 +91,14 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+  enum led_state
+    {
+  	  green,
+  	  yellow,
+  	  red
+    } current_state = green;
+
+    uint8_t counter = DURATION_RED;
 
   /* USER CODE END 2 */
 
@@ -95,6 +106,47 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  --counter;
+
+	  switch(current_state)
+	  {
+	  case green:
+		  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin, SET);
+		  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin | LED_DEBUG_Pin, RESET);
+
+		  if(counter <= 0)
+		  {
+			  current_state = yellow;
+			  counter = DURATION_YELLOW;
+		  }
+
+		  break;
+	  case yellow:
+		  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin, SET);
+		  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin | LED_DEBUG_Pin, RESET);
+
+		  if(counter <= 0)
+		  {
+			  current_state = red;
+			  counter = DURATION_RED;
+		  }
+
+		  break;
+	  case red:
+		  HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, SET);
+		  HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin | OUTPUT_Y1_Pin, RESET);
+
+		  if(counter <= 0)
+		  {
+			  current_state = green;
+			  counter = DURATION_GREEN;
+		  }
+
+		  break;
+	  default:
+	  }
+
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
