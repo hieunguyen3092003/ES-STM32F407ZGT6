@@ -36,6 +36,14 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define DUR_LED_DEBUG_SET 2
+#define DUR_LED_DEBUG_RESET 2
+
+#define DUR_OUTPUT_Y0_SET 2
+#define DUR_OUTPUT_Y0_RESET 4
+
+#define DUR_OUTPUT_Y1_SET 5
+#define DUR_OUTPUT_Y1_RESET 1
 
 /* USER CODE END PD */
 
@@ -97,8 +105,21 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
+
   sTimer2Set(1000, 1000);
   sTimer4Set(10000, 10000);
+
+  enum led_state{
+	  led_set,
+	  led_reset
+  };
+  enum led_state led_debug_cur_state = led_set;
+  enum led_state output_y0_cur_state  = led_set;
+  enum led_state output_y1_cur_state  = led_set;
+
+  uint8_t counter_led_debug = DUR_LED_DEBUG_SET;
+  uint8_t counter_output_y0 = DUR_OUTPUT_Y0_SET;
+  uint8_t counter_output_y1 = DUR_OUTPUT_Y1_SET;
 
   /* USER CODE END 2 */
 
@@ -106,6 +127,78 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(sTimer2GetFlag())
+	  {
+		  --counter_led_debug;
+		  --counter_output_y0;
+		  --counter_output_y1;
+
+		  switch (led_debug_cur_state)
+		  {
+			case led_set:
+				HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, SET);
+
+				if(counter_led_debug <= 0)
+				{
+					led_debug_cur_state = led_reset;
+					counter_led_debug = DUR_LED_DEBUG_RESET;
+				}
+				break;
+			default:
+				HAL_GPIO_WritePin(GPIOE, LED_DEBUG_Pin, RESET);
+
+				if(counter_led_debug <= 0)
+				{
+					led_debug_cur_state = led_set;
+					counter_led_debug = DUR_LED_DEBUG_SET;
+				}
+				break;
+		  }
+
+		  switch (output_y0_cur_state )
+		  {
+			case led_set:
+				HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin, SET);
+
+				if(counter_output_y0 <= 0)
+				{
+					output_y0_cur_state  = led_reset;
+					counter_output_y0 = DUR_OUTPUT_Y0_RESET;
+				}
+				break;
+			default:
+				HAL_GPIO_WritePin(GPIOE, OUTPUT_Y0_Pin, RESET);
+
+				if(counter_output_y0 <= 0)
+				{
+					output_y0_cur_state  = led_set;
+					counter_output_y0 = DUR_OUTPUT_Y0_SET;
+				}
+				break;
+		  }
+
+		  switch (output_y1_cur_state)
+		  {
+			case led_set:
+				HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin, SET);
+
+				if(counter_output_y1 <= 0)
+				{
+					output_y1_cur_state  = led_reset;
+					counter_output_y1 = DUR_OUTPUT_Y1_RESET;
+				}
+				break;
+			default:
+				HAL_GPIO_WritePin(GPIOE, OUTPUT_Y1_Pin, RESET);
+
+				if(counter_output_y1 <= 0)
+				{
+					output_y1_cur_state  = led_set;
+					counter_output_y1 = DUR_OUTPUT_Y1_SET;
+				}
+				break;
+		  }
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
