@@ -97,8 +97,17 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
-  sTimer2Set(1000, 1000);
-  sTimer4Set(10000, 10000);
+  sTimer2Set(0, 1000);
+
+//  sTimer4Set(0, 2500); // 1Hz
+  sTimer4Set(0, 100); // 25Hz
+//  sTimer4Set(0, 25); // 100Hz
+
+  led7SegSetColon(0);
+  led7SegSetDigit(2, 0, 0);
+  led7SegSetDigit(0, 1, 0);
+  led7SegSetDigit(2, 2, 0);
+  led7SegSetDigit(4, 3, 0);
 
   /* USER CODE END 2 */
 
@@ -106,6 +115,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(sTimer4GetFlag())
+	  {
+		  led7SegDisplay();
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
