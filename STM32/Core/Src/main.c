@@ -20,12 +20,15 @@
 #include "main.h"
 #include "spi.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "sTimer.h"
 #include "led7Seg.h"
+#include "uart.h"
+#include "utils.h"
 
 /* USER CODE END Includes */
 
@@ -95,6 +98,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
   sTimer2Set(1000, 1000);
