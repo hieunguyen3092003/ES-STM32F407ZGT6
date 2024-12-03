@@ -6,29 +6,46 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
+  * <h2><center>&copy; Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.</center></h2>
   *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * This software component is licensed by ST under BSD 3-Clause license,
+  * the "License"; You may not use this file except in compliance with the
+  * License. You may obtain a copy of the License at:
+  *                        opensource.org/licenses/BSD-3-Clause
   *
   ******************************************************************************
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
+#include "i2c.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-
+#include "fsmc.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "sTimer.h"
-#include "led7Seg.h"
+#include "software_timer.h"
+#include "led_7seg.h"
+#include "button.h"
+#include "lcd.h"
+#include "picture.h"
+#include "ds3231.h"
+#include "sensor.h"
+#include "buzzer.h"
+#include "touch.h"
 #include "uart.h"
-#include "utils.h"
+#include "light_control.h"
+//include for project
+#include "global.h"
+#include "snake.h"
+#include "interface.h"
+#include "fun_touch.h"
+#include "fsm.h"
 
 /* USER CODE END Includes */
 
@@ -39,7 +56,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -48,21 +64,25 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-
+DMA_HandleTypeDef hdma_adc1;
 /* USER CODE BEGIN PV */
+#define INIT 0
+#define DRAW 1
+#define CLEAR 2
 
+int draw_Status = INIT;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void blinkDebugLed(void);
-void initSystem(void);
-
+void system_init();
+void test_led();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -72,7 +92,6 @@ void initSystem(void);
   */
 int main(void)
 {
-
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -95,23 +114,44 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_ADC1_Init();
+  MX_FSMC_Init();
+  MX_I2C1_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
-  MX_TIM4_Init();
   MX_USART1_UART_Init();
+  MX_TIM1_Init();
+  MX_TIM13_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  initSystem();
-  sTimer2Set(1000, 1000);
-  sTimer4Set(10000, 10000);
-
+  system_init();
+  //uint32_t counterTouch = 0;
   /* USER CODE END 2 */
-
+  //touch_Adjust();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+    /* USER CODE END WHILE*/
+	  //scan touch screen
 
+
+	  	  // 50ms task
+	  	  if(flag_timer2 == 1){
+	  		  flag_timer2 = 0;
+//	  		  if (++counterTouch % 2 == 0){
+//	  			  counterTouch = 0;
+//		  		  touch_Scan();
+//	  		  }
+	  		  touch_Scan();
+	  		  button_Scan();
+
+	  		  input_process();
+	  		  fsm_ingame();
+
+	  		  test_led();
+	  	  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -130,7 +170,6 @@ void SystemClock_Config(void)
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -147,7 +186,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -164,17 +202,37 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void blinkDebugLed()
-{
-	HAL_GPIO_TogglePin(GPIOE, LED_DEBUG_Pin);
-}
-void initSystem()
-{
-	initTimer2();
-	initTimer4();
-	initLed7Seg();
+
+void system_init(){
+	  timer_init();
+	  button_init();
+	  lcd_init();
+	  touch_init();
+	  led7_init();
+
+	  home_lcd();				//hien thi man hinh vua moi dau
+	  snake_init();				//khoi tao ran
+
+	  //ds3231_init();
+	  //uart_init_esp();
+
+	  strcpy(history[0].name, "abc");
+	  history[0].score = 1000;
+	  strcpy(history[1].name, "def");
+	  history[1].score = 124;
+
+	  setTimer3(50);
+	  setTimer2(50);
 }
 
+uint8_t counter_led = 0;
+
+void test_led(){
+	if (++counter_led % 20 == 0){
+		HAL_GPIO_TogglePin(DEBUG_LED_GPIO_Port, DEBUG_LED_Pin);
+		counter_led = 0;
+	}
+}
 /* USER CODE END 4 */
 
 /**
@@ -208,3 +266,5 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
