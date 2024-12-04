@@ -33,23 +33,35 @@ void loop()
 
     if (Serial.available())
     {
-      int msg = Serial.read();
+      String rawData = "";
 
-      if (msg == 'o')
+      while (Serial.available())
       {
-        Serial.print('O');
+        char c = Serial.read();
+        rawData += c;
+        delay(10);
       }
-      else if (msg == 'a')
+
+      Serial.print("Received raw data: ");
+      Serial.println(rawData);
+
+      rawData.trim(); // remove blankspace
+      if (rawData.startsWith("!TEMP:") && rawData.endsWith("#"))
       {
-        publishLightStatus(0);
+        rawData.remove(0, 7);
+        rawData.remove(rawData.length() - 2);
+
+        Serial.print(rawData);
+
+        float temperature = atof(rawData.c_str()); // convert to float
+
+        publishTemp(temperature);
       }
-      else if (msg == 'A')
+      else
       {
-        publishLightStatus(1);
+        Serial.println("Invalid data format.");
       }
     }
-
-    toggleLedDebug();
   }
 }
 

@@ -11,6 +11,7 @@ Adafruit_MQTT_Client mqtt(&client, AIO_SERVER,
                           AIO_SERVERPORT, AIO_USERNAME, AIO_KEY);
 
 Adafruit_MQTT_Publish light_pub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/led");
+Adafruit_MQTT_Publish temp_pub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/temperature");
 
 bool initConnectAda()
 {
@@ -48,4 +49,17 @@ bool initConnectAda()
 void publishLightStatus(uint8_t status)
 {
     light_pub.publish(status);
+}
+
+void publishTemp(float temperature)
+{
+    if (temp_pub.publish(temperature))
+    {
+        Serial.print("Published temperature: ");
+        Serial.println(temperature);
+    }
+    else
+    {
+        Serial.println("Failed to publish temperature.");
+    }
 }

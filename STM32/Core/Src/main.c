@@ -28,6 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <string.h>
 #include "sTimer.h"
 #include "led7Seg.h"
 #include "button.h"
@@ -64,7 +65,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-void blinkDebugLed(void);
+void toggleDebugLed(void);
 void initSystem(void);
 
 /* USER CODE END PFP */
@@ -114,8 +115,13 @@ int main(void)
   MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
-  sTimer2Set(1000, 1000); // 50ms software timer
-  sTimer4Set(10000, 10000);
+
+  const int INTERVAL = 30; // 30 seconds
+
+  sTimer2Set(1000, INTERVAL * 1000); // 30s software timer
+  sTimer4Set(10000, 500); // 50ms software timer
+
+  lcdClear(WHITE);
 
   /* USER CODE END 2 */
 
@@ -123,6 +129,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(sTimer2GetFlag())
+	  {
+		  toggleDebugLed();
+
+		  sensor_read();
+		  float temperature = sensor_get_temperature();
+
+		  lcdShowFloatNum(100, 100, temperature, 5, BLACK, WHITE, 24, 0);
+
+		  char buffer[50];
+
+		  sprintf((void*)buffer, "!TEMP:<%.2f>#", temperature);
+
+		  // Gửi chuỗi qua UART
+		  uart_EspSendBytes((uint8_t *)buffer, strlen(buffer));
+	  }
+
+	  if(sTimer4GetFlag())
+	  {
+		  buttonScan();
+	  }
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -177,7 +205,7 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-void blinkDebugLed()
+void toggleDebugLed()
 {
 	HAL_GPIO_TogglePin(GPIOE, LED_DEBUG_Pin);
 }
@@ -192,6 +220,17 @@ void initSystem()
 	sensor_init();
 	buzzer_init();
 }
+//void test_Adc()
+//{
+//	if( count_adc == 0)
+//	{
+//		sensor_Read ();
+//
+//		lcd_ShowStr (10 , 100 , " Voltage :", RED , BLACK , 16, 0);
+//		lcd_ShowFloatNum (130 , 100 , sensor_GetVoltage () , 4, RED , BLACK , 16);
+//		lcd_ShowStr (10 , 120 , " Current :", RED , BLACK , 16, 0);
+//	}
+//}
 
 /* USER CODE END 4 */
 
