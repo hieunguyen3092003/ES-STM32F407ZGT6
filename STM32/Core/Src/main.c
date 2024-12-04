@@ -18,17 +18,25 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
+#include "fsmc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "sTimer.h"
 #include "led7Seg.h"
+#include "button.h"
+#include "lcd.h"
 #include "uart.h"
 #include "utils.h"
+#include "sensor.h"
+#include "lightControl.h"
+#include "buzzer.h"
 
 /* USER CODE END Includes */
 
@@ -95,13 +103,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
+  MX_FSMC_Init();
+  MX_ADC1_Init();
+  MX_TIM13_Init();
   /* USER CODE BEGIN 2 */
   initSystem();
-  sTimer2Set(1000, 1000);
+  sTimer2Set(1000, 1000); // 50ms software timer
   sTimer4Set(10000, 10000);
 
   /* USER CODE END 2 */
@@ -173,6 +186,11 @@ void initSystem()
 	initTimer2();
 	initTimer4();
 	initLed7Seg();
+	initButton();
+	initLCD();
+	uart_init_esp();
+	sensor_init();
+	buzzer_init();
 }
 
 /* USER CODE END 4 */

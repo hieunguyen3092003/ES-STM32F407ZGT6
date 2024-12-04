@@ -8,3 +8,6 @@
 
 # Mac files 
 *.DS_Store
+
+# Priveate config files
+./ESP8266/lib/adafruit/config.h
